@@ -1,0 +1,17 @@
+model,maturity,mae_bp,rmse_bp
+zero_change,overall,3.679,5.457
+zero_change,3M,1.899,3.513
+zero_change,6M,2.105,3.641
+zero_change,1Y,3.223,5.257
+zero_change,2Y,4.609,6.675
+zero_change,5Y,4.973,6.674
+zero_change,10Y,4.708,6.048
+zero_change,30Y,4.233,5.438
+linear_regression,overall,3.994,5.679
+linear_regression,3M,2.523,3.838
+linear_regression,6M,2.464,3.811
+linear_regression,1Y,3.508,5.375
+linear_regression,2Y,4.857,6.804
+linear_regression,5Y,5.199,6.909
+linear_regression,10Y,4.926,6.368
+linear_regression,30Y,4.481,5.747

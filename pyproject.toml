@@ -25,6 +25,7 @@ dev = [
 [project.scripts]
 download-treasury-data = "market_resonance.data.download_treasury:main"
 explore-treasury-data = "market_resonance.visualization.explore_treasury:main"
+evaluate-baselines = "market_resonance.evaluation.run_baselines:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
