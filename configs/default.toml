@@ -2,3 +2,10 @@
 # only when their conceptual stages are implemented.
 seed = 42
 maturities = ["3M", "6M", "1Y", "2Y", "5Y", "10Y", "30Y"]
+
+[features]
+change_lags = [1, 5, 21]
+lookback_days = 60
+horizon_days = 1
+train_fraction = 0.70
+validation_fraction = 0.15

@@ -10,9 +10,9 @@ The seven target maturities are `3M`, `6M`, `1Y`, `2Y`, `5Y`, `10Y`, and `30Y`. 
 
 1. **Data contract and download**: use the public FRED CSV endpoint for DGS3MO, DGS6MO, DGS1, DGS2, DGS5, DGS10, and DGS30. The cleaned artifact stores dates plus the seven yields in percent, with incomplete dates removed and no forward-fill.
 2. **Cleaning and inspection**: parse dates, sort chronologically, detect duplicates and missing observations, and save an immutable cleaned intermediate artifact.
-3. **Feature construction**: create daily, weekly, and monthly movement representations without using observations after the prediction time.
-4. **Chronological splits**: create train, validation, and test periods. The test period remains untouched until final evaluation.
-5. **Preprocessing**: fit transformations such as standardization on training rows only, then apply the frozen parameters to validation and test rows.
+3. **Feature construction**: create maturity-level features for yield levels plus 1-, 5-, and 21-trading-day trailing changes without using observations after the prediction time.
+4. **Chronological splits**: create train, validation, and test supervised windows. The test period remains untouched until final evaluation.
+5. **Preprocessing**: fit transformations such as standardization on training windows only, then apply the frozen parameters to validation and test windows.
 6. **Baselines**: establish persistence and simple statistical benchmarks before introducing neural networks.
 7. **Small LSTM**: train the primary model on fixed-length historical windows.
 8. **Ablations**: compare daily-only, weekly-only, monthly-only, and combined-frequency inputs.
@@ -22,15 +22,17 @@ No model or data implementation belongs in the scaffold phase.
 
 ## Planned tensor contract
 
-The exact feature count will be finalized during feature design. The core batch-first sequence convention is:
+Phase 3 uses four features per maturity: yield level, 1-day change, 5-day
+change, and 21-day change. With seven maturities, each time step has 28
+features. The core batch-first sequence convention is:
 
-- Input tensor: `(batch_size, lookback_steps, num_features)`
+- Input tensor: `(batch_size, 60, 28)`
   - axis 0: independent historical examples in one training batch
-  - axis 1: ordered time steps in the lookback window
+  - axis 1: ordered trading days in the 60-day lookback window
   - axis 2: features available at each time step
 - Target tensor: `(batch_size, 7)`
   - axis 0: examples aligned with the input windows
-  - axis 1: the seven forecast maturities in the fixed order above
+  - axis 1: future yield changes for the seven forecast maturities in the fixed order above
 - LSTM output: `(batch_size, lookback_steps, hidden_size)` when `batch_first=True`
   - axis 0: examples
   - axis 1: time steps
