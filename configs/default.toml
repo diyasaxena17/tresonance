@@ -1,0 +1,4 @@
+# Reproducibility and research defaults. Model and feature settings will be added
+# only when their conceptual stages are implemented.
+seed = 42
+maturities = ["3M", "6M", "1Y", "2Y", "5Y", "10Y", "30Y"]
