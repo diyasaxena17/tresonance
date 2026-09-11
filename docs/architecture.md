@@ -18,12 +18,12 @@ The seven target maturities are `3M`, `6M`, `1Y`, `2Y`, `5Y`, `10Y`, and `30Y`. 
 8. **Ablations**: compare daily-only, weekly-only, monthly-only, and combined-frequency inputs.
 9. **Evaluation and reporting**: save actual metrics, forecast tables, residual diagnostics, and publication-quality figures under `reports/figures/`.
 
-No model or data implementation belongs in the scaffold phase.
+No model or data implementation belongs in the initial scaffold.
 
 ## Planned tensor contract
 
-Phase 3 uses four features per maturity: yield level, 1-day change, 5-day
-change, and 21-day change. With seven maturities, each time step has 28
+The supervised window dataset uses four features per maturity: yield level,
+1-day change, 5-day change, and 21-day change. With seven maturities, each time step has 28
 features. The core batch-first sequence convention is:
 
 - Input tensor: `(batch_size, 60, 28)`

@@ -11,7 +11,11 @@ os.environ.setdefault("MPLCONFIGDIR", "/tmp/market_resonance_mpl")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.linear_model import LinearRegression
+
+try:
+    from sklearn.linear_model import LinearRegression
+except ModuleNotFoundError:
+    LinearRegression = None
 
 from market_resonance.data import DEFAULT_OUTPUT_PATH, MATURITIES
 from market_resonance.features import (
@@ -35,6 +39,18 @@ class BaselineRun:
     target_columns: list[str]
 
 
+@dataclass(frozen=True)
+class LinearRegressionBaseline:
+    """Small multi-output ordinary least-squares fallback regression baseline."""
+
+    coefficients: np.ndarray
+
+    def predict(self, X: np.ndarray) -> np.ndarray:
+        """Predict targets from a 2D design matrix."""
+        design = _add_intercept_column(X)
+        return design @ self.coefficients
+
+
 def zero_change_predictions(y_true: np.ndarray) -> np.ndarray:
     """Predict no future yield change for every maturity."""
     return np.zeros_like(y_true, dtype=float)
@@ -48,16 +64,30 @@ def flatten_sequence_features(X: np.ndarray) -> np.ndarray:
 def fit_linear_regression_baseline(
     X_train: np.ndarray,
     y_train: np.ndarray,
-) -> LinearRegression:
+) -> LinearRegression | LinearRegressionBaseline:
     """Fit a simple multi-output linear regression baseline."""
-    model = LinearRegression()
-    model.fit(flatten_sequence_features(X_train), y_train)
-    return model
+    if LinearRegression is not None:
+        model = LinearRegression()
+        model.fit(flatten_sequence_features(X_train), y_train)
+        return model
+
+    design = _add_intercept_column(flatten_sequence_features(X_train))
+    coefficients, *_ = np.linalg.lstsq(design, y_train, rcond=None)
+    return LinearRegressionBaseline(coefficients=coefficients)
 
 
-def regression_predictions(model: LinearRegression, X: np.ndarray) -> np.ndarray:
+def regression_predictions(
+    model: LinearRegression | LinearRegressionBaseline,
+    X: np.ndarray,
+) -> np.ndarray:
     """Predict future yield changes from flattened sequence features."""
     return model.predict(flatten_sequence_features(X))
+
+
+def _add_intercept_column(X: np.ndarray) -> np.ndarray:
+    """Add a leading intercept column to a 2D design matrix."""
+    intercept = np.ones((X.shape[0], 1), dtype=X.dtype)
+    return np.column_stack([intercept, X])
 
 
 def evaluate_predictions(

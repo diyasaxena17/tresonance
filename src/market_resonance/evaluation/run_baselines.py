@@ -1,4 +1,4 @@
-"""Command-line entry point for Phase 4 baseline evaluation."""
+"""Command-line entry point for baseline evaluation."""
 
 from __future__ import annotations
 

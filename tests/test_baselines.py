@@ -1,4 +1,4 @@
-"""Tests for Phase 4 baseline forecasting and evaluation."""
+"""Tests for baseline forecasting and evaluation."""
 
 import numpy as np
 import pandas as pd

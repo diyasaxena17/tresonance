@@ -1,4 +1,4 @@
-# Phase 4 Baselines
+# Baselines
 
 Baselines are the first models in the forecasting stack. They are intentionally
 simple, transparent, and hard to beat for noisy financial data.
@@ -53,4 +53,4 @@ the linear regression baseline. That is a useful warning: daily yield changes
 are noisy, and a more complex model must beat a very simple "no change"
 forecast before it is worth trusting.
 
-No LSTM or neural network is implemented in this phase.
+No LSTM or neural network is implemented here.
