@@ -46,7 +46,7 @@
     }
   ],
   "parameter_count": 24519,
-  "single_sample_latency_ms": 0.4767,
+  "single_sample_latency_ms": 0.5181,
   "batch_size": 64,
-  "batch_latency_ms": 6.7481
+  "batch_latency_ms": 7.5259
 }
