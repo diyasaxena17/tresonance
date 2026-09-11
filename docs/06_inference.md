@@ -62,3 +62,12 @@ PYTHONPATH=src python -m market_resonance.inference.run_inference
 By default this writes:
 
 `results/inference_metrics.json`
+
+## Educational Time-Value Link
+
+Forecasted yield changes matter because interest rates are discount rates in
+many financial calculations. A simplified example is available in
+`docs/time_value_of_money_example.md`.
+
+That example is explicitly an approximation: Treasury constant-maturity/par
+yields are not an exact zero-coupon discount curve.
