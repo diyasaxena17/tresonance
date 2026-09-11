@@ -90,7 +90,7 @@ def run_ablation_study(
             change_lags=spec.change_lags,
         )
         splits = chronological_train_validation_test_split(windows)
-        standardized_splits, _ = standardize_splits(splits)
+        standardized_splits, standardizer = standardize_splits(splits)
         train_loader, validation_loader, _ = make_dataloaders(
             standardized_splits,
             batch_size=config.batch_size,
@@ -110,6 +110,10 @@ def run_ablation_study(
             checkpoint_metadata={
                 "feature_set": spec.model_name,
                 "change_lags": spec.change_lags,
+                "normalization_mean": standardizer.mean_.tolist(),
+                "normalization_scale": standardizer.scale_.tolist(),
+                "feature_columns": standardized_splits.train.feature_columns,
+                "target_columns": standardized_splits.train.target_columns,
                 "lookback": lookback,
                 "horizon": horizon,
             },
