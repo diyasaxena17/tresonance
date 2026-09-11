@@ -1,0 +1,65 @@
+{
+  "hypothesis": "Adding 5-day and 21-day yield-change features improves LSTM forecast performance over daily-only features.",
+  "conclusion": "not supported",
+  "overall_test_metrics": {
+    "daily_lstm": {
+      "mae_bp": 3.756,
+      "rmse_bp": 5.502
+    },
+    "persistence_zero_change": {
+      "mae_bp": 3.679,
+      "rmse_bp": 5.457
+    },
+    "linear_regression": {
+      "mae_bp": 3.994,
+      "rmse_bp": 5.679
+    },
+    "multi_frequency_lstm": {
+      "mae_bp": 3.805,
+      "rmse_bp": 5.544
+    }
+  },
+  "training_histories": {
+    "daily_lstm": {
+      "train_loss": [
+        0.0032090085480216807,
+        0.0029114558011330777,
+        0.002882080084635209,
+        0.0028727382029684182,
+        0.002844877124188535
+      ],
+      "validation_loss": [
+        0.0012444926035095171,
+        0.0012221469936637588,
+        0.0012245036413124609,
+        0.0012713447135676247,
+        0.0012246183682288962
+      ],
+      "best_epoch": 2,
+      "best_validation_loss": 0.0012221469936637588
+    },
+    "multi_frequency_lstm": {
+      "train_loss": [
+        0.00374009852896301,
+        0.0029899403478836754,
+        0.002926684551396486,
+        0.002861989792344209,
+        0.0028454000064472734,
+        0.0028209853291310265,
+        0.0028064783316035977
+      ],
+      "validation_loss": [
+        0.0013867333641308537,
+        0.0013536225787235583,
+        0.0013064465852853052,
+        0.0012634126414869887,
+        0.0013504461890572676,
+        0.0013057864363280691,
+        0.0014676048551464885
+      ],
+      "best_epoch": 4,
+      "best_validation_loss": 0.0012634126414869887
+    }
+  },
+  "note": "Results are reported as run; no result cherry-picking was applied."
+}

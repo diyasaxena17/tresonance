@@ -131,10 +131,16 @@ def run_baseline_evaluation(
     data_path: Path = DEFAULT_OUTPUT_PATH,
     lookback: int = 60,
     horizon: int = 1,
+    change_lags: tuple[int, ...] = (1, 5, 21),
 ) -> BaselineRun:
     """Train and evaluate zero-change and linear-regression baselines."""
     yields = pd.read_csv(data_path, parse_dates=["date"])
-    windows = build_supervised_windows(yields, lookback=lookback, horizon=horizon)
+    windows = build_supervised_windows(
+        yields,
+        lookback=lookback,
+        horizon=horizon,
+        change_lags=change_lags,
+    )
     splits = chronological_train_validation_test_split(windows)
     standardized_splits, _ = standardize_splits(splits)
 
