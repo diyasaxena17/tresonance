@@ -66,9 +66,22 @@ A chronological split keeps time order intact. The oldest examples become the
 training set, the next block becomes validation, and the newest block becomes
 test. We do not randomly shuffle time-series examples before splitting.
 
+## MAE
+
+MAE means mean absolute error. It measures the average size of the forecast
+miss, ignoring whether the model was too high or too low. If errors are reported
+in basis points, an MAE of 4 means the model is off by about 4 basis points on
+an average forecast.
+
+## RMSE
+
+RMSE means root mean squared error. It also measures forecast error, but it
+penalizes large misses more heavily than MAE. RMSE is useful when big mistakes
+are especially costly or important to notice.
+
 ## Leakage
 
 Leakage happens when information from the future accidentally enters the model's
 inputs or preprocessing. Leakage can make results look better than they really
-are. The Phase 3 tests check that future rows do not enter `X` and that
+are. The supervised-window tests check that future rows do not enter `X` and that
 normalization is fitted only on training inputs.

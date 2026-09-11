@@ -25,7 +25,7 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-Then verify the data phase:
+Then verify the data pipeline:
 
 ```bash
 pytest

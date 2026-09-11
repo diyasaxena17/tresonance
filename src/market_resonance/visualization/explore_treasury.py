@@ -14,7 +14,7 @@ from market_resonance.visualization.treasury_eda import (
 
 
 def main(argv: Sequence[str] | None = None) -> int:
-    """Generate Phase 2 Treasury EDA figures."""
+    """Generate Treasury EDA figures."""
     parser = argparse.ArgumentParser(
         description="Generate exploratory Treasury yield figures."
     )

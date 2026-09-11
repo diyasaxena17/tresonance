@@ -1,6 +1,6 @@
-# Phase 3 Supervised Feature Windows
+# Supervised Feature Windows
 
-Phase 3 turns the cleaned Treasury yield table into supervised-learning
+This step turns the cleaned Treasury yield table into supervised-learning
 examples. The raw data is a time series. A supervised dataset has inputs and
 targets:
 

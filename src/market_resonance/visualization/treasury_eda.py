@@ -24,7 +24,7 @@ EXAMPLE_CURVE_DATES = (
 
 
 def load_treasury_dataset(path: Path = DEFAULT_OUTPUT_PATH) -> pd.DataFrame:
-    """Load the cleaned Treasury yield dataset from Phase 1."""
+    """Load the cleaned Treasury yield dataset."""
     frame = pd.read_csv(path, parse_dates=["date"])
     return frame.sort_values("date").reset_index(drop=True)
 
@@ -182,7 +182,7 @@ def generate_treasury_eda_figures(
     data_path: Path = DEFAULT_OUTPUT_PATH,
     output_dir: Path = DEFAULT_FIGURE_DIR,
 ) -> list[Path]:
-    """Generate all Phase 2 exploratory Treasury figures."""
+    """Generate all exploratory Treasury figures."""
     _set_common_style()
     frame = load_treasury_dataset(data_path)
     return [
