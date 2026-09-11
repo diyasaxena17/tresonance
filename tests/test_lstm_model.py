@@ -79,6 +79,8 @@ def test_training_loop_saves_best_checkpoint(tmp_path) -> None:
     assert len(history.validation_loss) == len(history.train_loss)
     assert 1 <= history.best_epoch <= len(history.train_loss)
     assert "model_state_dict" in checkpoint
+    assert "model_config" in checkpoint
+    assert "metadata" in checkpoint
 
 
 def _small_splits() -> WindowSplits:

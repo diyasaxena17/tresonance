@@ -47,7 +47,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         horizon=args.horizon,
     )
     splits = chronological_train_validation_test_split(windows)
-    standardized_splits, _ = standardize_splits(splits)
+    standardized_splits, standardizer = standardize_splits(splits)
     train_loader, validation_loader, _ = make_dataloaders(
         standardized_splits,
         batch_size=args.batch_size,
@@ -77,6 +77,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         validation_loader=validation_loader,
         config=config,
         checkpoint_path=args.checkpoint,
+        checkpoint_metadata={
+            "normalization_mean": standardizer.mean_.tolist(),
+            "normalization_scale": standardizer.scale_.tolist(),
+            "feature_columns": standardized_splits.train.feature_columns,
+            "target_columns": standardized_splits.train.target_columns,
+            "lookback": args.lookback,
+            "horizon": args.horizon,
+        },
     )
     print(f"Best epoch: {history.best_epoch}")
     print(f"Best validation MSE: {history.best_validation_loss:.8f}")
