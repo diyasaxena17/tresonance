@@ -9,3 +9,15 @@ lookback_days = 60
 horizon_days = 1
 train_fraction = 0.70
 validation_fraction = 0.15
+
+[reinforcement]
+replay_capacity = 10000
+batch_size = 32
+gamma = 0.95
+learning_rate = 0.001
+epsilon_start = 1.0
+epsilon_end = 0.05
+episodes = 5
+target_update_steps = 100
+train_fraction = 0.70
+direction_threshold_bp = 1.0

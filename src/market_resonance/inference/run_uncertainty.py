@@ -36,6 +36,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"Saved ranges to {run.range_path}")
     print(f"Saved fan figure to {run.fan_figure_path}")
     print(f"Saved range figure to {run.range_figure_path}")
+    print(f"Saved distribution figure to {run.distribution_figure_path}")
+    print(f"Saved simulation figure to {run.simulation_figure_path}")
     return 0
 
 

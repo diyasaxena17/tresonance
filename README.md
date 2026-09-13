@@ -1,21 +1,53 @@
-# Market Resonance
+# Tresonance
 
 **Multi-frequency neural Treasury yield-curve forecasting with PyTorch**
 
-Market Resonance is a compact research project studying whether
+Tresonance is a compact research project studying whether
 multi-frequency Treasury yield features improve one-trading-day-ahead
-yield-curve forecasts over simple baselines.
+yield-curve forecasts over simple baselines. It also includes a small
+reinforcement-learning extension that reframes next-day 10Y Treasury movement
+as a FALL/FLAT/RISE decision problem.
+
+## Summary
+
+This project tested two related ideas:
+
+1. Can multi-frequency features improve supervised Treasury yield-curve
+   forecasts?
+2. Can a small DQN make better next-day 10Y direction decisions than existing
+   forecasting models after their numerical predictions are converted into
+   FALL/FLAT/RISE classes?
+
+The supervised result was humbling: the multi-frequency LSTM did **not** beat
+the daily-only LSTM or the zero-change persistence baseline on overall test
+MAE/RMSE.
+
+The directional RL result was more encouraging but still limited: the DQN had
+the best 10Y directional accuracy in this run, but its average reward remained
+negative and it did not learn the FLAT class well.
 
 ## Research Question
 
 Do 5-day and 21-day yield-change features improve a small LSTM forecast beyond
 daily yield levels and 1-day changes?
 
+A secondary RL question asks whether a small DQN can make better next-day 10Y
+direction decisions than the existing forecasting models after their numerical
+10Y predictions are converted to the same direction classes.
+
 The seven forecast maturities are:
 
 `3M`, `6M`, `1Y`, `2Y`, `5Y`, `10Y`, and `30Y`.
 
 ## Key Figure
+
+![10Y directional accuracy by model](reports/figures/rl_directional_accuracy.png)
+
+The DQN had the highest held-out 10Y directional accuracy in this run. This is
+not a profitability claim: it is a research result for a simple directional
+classification reward.
+
+For the original yield-curve forecasting ablation:
 
 ![Ablation RMSE by maturity](reports/figures/ablation_rmse_by_maturity.png)
 
@@ -27,19 +59,34 @@ run.
 ```mermaid
 flowchart LR
     A[FRED Treasury yields] --> B[Clean daily dataset]
-    B --> C[Feature windows]
-    C --> D[Chronological splits]
+    B --> C[Chronological train / validation / test split]
+
+    C --> D[Supervised feature windows]
     D --> E[Train-only normalization]
-    E --> F[Baselines]
-    E --> G[Small LSTM]
-    G --> H[Inference]
-    H --> I[Residual covariance]
-    I --> J[Monte Carlo yield curves]
+    E --> F[Persistence + linear regression]
+    E --> G[Daily LSTM]
+    E --> H[Multi-frequency LSTM]
+    G --> I[Numerical yield-change forecasts]
+    H --> I
+    F --> I
+    I --> J[Convert 10Y forecasts to FALL / FLAT / RISE]
+
+    C --> K[Train-only 10Y directional environment]
+    K --> L[DQN + replay buffer + target network]
+    L --> M[Greedy test-period actions]
+
+    J --> N[Common-date directional comparison]
+    M --> N
+    H --> O[Inference]
+    O --> P[Residual covariance]
+    P --> Q[Monte Carlo yield curves]
 ```
 
 ## Results
 
 All values are generated artifacts in `reports/` or `results/`.
+
+### Numerical Forecasting
 
 | model | test MAE (bp) | test RMSE (bp) |
 |---|---:|---:|
@@ -47,6 +94,26 @@ All values are generated artifacts in `reports/` or `results/`.
 | daily LSTM | 3.756 | 5.502 |
 | multi-frequency LSTM | 3.805 | 5.544 |
 | linear regression | 3.994 | 5.679 |
+
+The persistence baseline remained difficult to beat. The daily-only LSTM
+slightly outperformed the multi-frequency LSTM in this run.
+
+### Directional 10Y Experiment
+
+Directional 10Y experiment from `reports/tables/rl_model_comparison.csv`:
+
+| model | direction accuracy | average reward |
+|---|---:|---:|
+| persistence zero-change | 0.136 | -0.727 |
+| linear regression | 0.337 | -0.326 |
+| daily LSTM | 0.201 | -0.597 |
+| multi-frequency LSTM | 0.264 | -0.471 |
+| DQN | 0.448 | -0.103 |
+
+DQN MAE/RMSE are unavailable because the DQN chooses direction actions rather
+than predicting numerical yield changes.
+
+### Inference And Uncertainty
 
 Inference metrics from `results/inference_metrics.json`:
 
@@ -70,12 +137,25 @@ Uncertainty range examples from `reports/tables/uncertainty_ranges.csv`:
 - The daily-only LSTM slightly outperformed the multi-frequency LSTM.
 - The multi-frequency hypothesis was not supported in this run.
 - Linear regression performed worse than persistence and both LSTMs overall.
+- The DQN had the best 10Y directional accuracy in the RL experiment, but its
+  average directional reward remained negative and it did not learn the FLAT
+  class well.
 - Validation residual covariance can produce a simple probabilistic forecast,
   but the assumptions are intentionally modest.
+
+## Skills And Learnings
+
+- Chronological financial ML evaluation and leakage prevention
+- PyTorch LSTM training, checkpointing, and inference
+- Baseline comparison and ablation-study design
+- Simple residual-based uncertainty simulation
+- Reinforcement-learning formulation with a DQN, replay buffer, target network,
+  and directional reward
 
 ## Limitations
 
 - This is a small educational LSTM, not a tuned production model.
+- The DQN is a small educational RL agent, not a trading or investment system.
 - The target horizon is one trading day.
 - Daily Treasury yield changes are noisy and often close to zero.
 - Constant-maturity/par yields are not an exact zero-coupon discount curve.
@@ -130,6 +210,7 @@ src/market_resonance/features/   supervised windows and normalization
 src/market_resonance/models/     PyTorch model definitions
 src/market_resonance/training/   training loops and checkpoints
 src/market_resonance/evaluation/ baselines and ablations
+src/market_resonance/reinforcement/ directional RL environment and DQN
 src/market_resonance/inference/  inference and uncertainty simulation
 tests/                           focused regression tests
 ```
@@ -147,4 +228,5 @@ tests/                           focused regression tests
 - `docs/08_stochastic_uncertainty.md`
 - `docs/09_results_and_failure_modes.md`
 - `docs/10_ml_systems_notes.md`
+- `docs/11_reinforcement_learning.md`
 - `docs/time_value_of_money_example.md`
