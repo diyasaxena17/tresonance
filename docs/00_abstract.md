@@ -1,6 +1,6 @@
 # Abstract
 
-Market Resonance studies whether multi-frequency Treasury yield features improve
+Tresonance studies whether multi-frequency Treasury yield features improve
 short-horizon yield-curve forecasts. The project uses daily U.S. Treasury
 constant-maturity yields for seven maturities: 3M, 6M, 1Y, 2Y, 5Y, 10Y, and
 30Y.

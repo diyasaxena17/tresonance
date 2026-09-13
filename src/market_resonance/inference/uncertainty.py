@@ -31,6 +31,12 @@ DEFAULT_SCENARIO_PATH = Path("results/monte_carlo_yield_curves.csv")
 DEFAULT_RANGE_PATH = Path("reports/tables/uncertainty_ranges.csv")
 DEFAULT_FAN_FIGURE_PATH = Path("reports/figures/yield_curve_fan.png")
 DEFAULT_RANGE_FIGURE_PATH = Path("reports/figures/uncertainty_ranges_by_maturity.png")
+DEFAULT_DISTRIBUTION_FIGURE_PATH = Path(
+    "reports/figures/monte_carlo_distribution_by_maturity.png"
+)
+DEFAULT_SIMULATION_FIGURE_PATH = Path(
+    "reports/figures/monte_carlo_simulated_curves.png"
+)
 
 
 @dataclass(frozen=True)
@@ -42,6 +48,8 @@ class UncertaintyRun:
     range_path: Path
     fan_figure_path: Path
     range_figure_path: Path
+    distribution_figure_path: Path
+    simulation_figure_path: Path
 
 
 def run_uncertainty_simulation(
@@ -52,6 +60,8 @@ def run_uncertainty_simulation(
     range_path: Path = DEFAULT_RANGE_PATH,
     fan_figure_path: Path = DEFAULT_FAN_FIGURE_PATH,
     range_figure_path: Path = DEFAULT_RANGE_FIGURE_PATH,
+    distribution_figure_path: Path = DEFAULT_DISTRIBUTION_FIGURE_PATH,
+    simulation_figure_path: Path = DEFAULT_SIMULATION_FIGURE_PATH,
     scenario_count: int = 1_000,
     seed: int = 42,
 ) -> UncertaintyRun:
@@ -88,6 +98,13 @@ def run_uncertainty_simulation(
 
     _save_fan_figure(point_yields, simulated_yields, fan_figure_path)
     _save_range_figure(ranges, range_figure_path)
+    _save_distribution_figure(simulated_yields, ranges, distribution_figure_path)
+    _save_simulation_figure(
+        point_yields,
+        simulated_yields,
+        simulation_figure_path,
+        seed=seed,
+    )
 
     summary = {
         "latest_input_date": latest_date.strftime("%Y-%m-%d"),
@@ -116,6 +133,8 @@ def run_uncertainty_simulation(
         range_path=range_path,
         fan_figure_path=fan_figure_path,
         range_figure_path=range_figure_path,
+        distribution_figure_path=distribution_figure_path,
+        simulation_figure_path=simulation_figure_path,
     )
 
 
@@ -202,12 +221,197 @@ def _save_fan_figure(
 
 def _save_range_figure(ranges: pd.DataFrame, figure_path: Path) -> None:
     figure_path.parent.mkdir(parents=True, exist_ok=True)
-    fig, ax = plt.subplots(figsize=(9, 4.8))
-    ax.bar(ranges["maturity"], ranges["width_90pct_bp"], color="#3b6ea8")
-    ax.set_title("90% Monte Carlo Range Width by Maturity")
+    x = np.arange(len(ranges))
+
+    fig, ax = plt.subplots(figsize=(10, 5.6))
+    ax.fill_between(
+        x,
+        ranges["p05_yield_percent"],
+        ranges["p95_yield_percent"],
+        color="#8bb7d8",
+        alpha=0.28,
+        label="5th-95th percentile",
+    )
+    ax.plot(
+        x,
+        ranges["p50_yield_percent"],
+        color="#1f5f8b",
+        marker="o",
+        linewidth=2.4,
+        markersize=6,
+        label="50th percentile",
+    )
+    ax.plot(
+        x,
+        ranges["point_forecast_yield_percent"],
+        color="#22313f",
+        marker="D",
+        linewidth=2.0,
+        markersize=5,
+        linestyle="--",
+        label="Point forecast",
+    )
+    ax.plot(
+        x,
+        ranges["p05_yield_percent"],
+        color="#5f97bd",
+        marker="v",
+        linewidth=1.4,
+        markersize=5,
+        alpha=0.9,
+        label="5th percentile",
+    )
+    ax.plot(
+        x,
+        ranges["p95_yield_percent"],
+        color="#5f97bd",
+        marker="^",
+        linewidth=1.4,
+        markersize=5,
+        alpha=0.9,
+        label="95th percentile",
+    )
+
+    for row_index, row in ranges.iterrows():
+        ax.annotate(
+            f"{row['width_90pct_bp']:.1f} bp",
+            (row_index, row["p95_yield_percent"]),
+            xytext=(0, 8),
+            textcoords="offset points",
+            ha="center",
+            fontsize=8,
+            color="#425466",
+        )
+
+    ax.set_title("Monte Carlo Yield-Curve Percentiles by Maturity")
     ax.set_xlabel("Maturity")
-    ax.set_ylabel("Width (basis points)")
-    ax.grid(axis="y", alpha=0.3)
+    ax.set_ylabel("Yield (%)")
+    ax.set_xticks(x, ranges["maturity"])
+    ax.grid(axis="y", alpha=0.25)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.legend(frameon=True, ncols=3, loc="upper left")
+    fig.tight_layout()
+    fig.savefig(figure_path, dpi=180, bbox_inches="tight")
+    plt.close(fig)
+
+
+def _save_distribution_figure(
+    simulated_yields: np.ndarray,
+    ranges: pd.DataFrame,
+    figure_path: Path,
+) -> None:
+    figure_path.parent.mkdir(parents=True, exist_ok=True)
+    colors = plt.cm.viridis(np.linspace(0.08, 0.86, len(MATURITIES)))
+
+    fig, ax = plt.subplots(figsize=(10, 5.8))
+    for index, maturity in enumerate(MATURITIES):
+        values = simulated_yields[:, index]
+        x_grid, density = _normal_density_curve(values)
+        ax.plot(
+            x_grid,
+            density,
+            color=colors[index],
+            linewidth=2.0,
+            label=maturity,
+        )
+        median = float(ranges.loc[index, "p50_yield_percent"])
+        ax.scatter(
+            [median],
+            [np.interp(median, x_grid, density)],
+            color=colors[index],
+            s=28,
+            zorder=3,
+        )
+
+    ax.set_title("Monte Carlo Yield Distributions by Maturity")
+    ax.set_xlabel("Simulated yield (%)")
+    ax.set_ylabel("Relative density")
+    ax.grid(axis="y", alpha=0.22)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.legend(title="Maturity", frameon=True, ncols=4, loc="upper left")
+    fig.tight_layout()
+    fig.savefig(figure_path, dpi=180, bbox_inches="tight")
+    plt.close(fig)
+
+
+def _normal_density_curve(values: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    mean = float(np.mean(values))
+    standard_deviation = float(np.std(values, ddof=1))
+    if standard_deviation == 0:
+        standard_deviation = 1e-9
+    low, high = np.percentile(values, [0.5, 99.5])
+    padding = (high - low) * 0.15
+    x_grid = np.linspace(low - padding, high + padding, 240)
+    density = (
+        np.exp(-0.5 * ((x_grid - mean) / standard_deviation) ** 2)
+        / (standard_deviation * np.sqrt(2 * np.pi))
+    )
+    return x_grid, density
+
+
+def _save_simulation_figure(
+    point_yields: np.ndarray,
+    simulated_yields: np.ndarray,
+    figure_path: Path,
+    seed: int,
+    max_curves: int = 180,
+) -> None:
+    figure_path.parent.mkdir(parents=True, exist_ok=True)
+    rng = np.random.default_rng(seed)
+    x = np.arange(len(MATURITIES))
+    scenario_count = simulated_yields.shape[0]
+    if scenario_count > max_curves:
+        selected = rng.choice(scenario_count, size=max_curves, replace=False)
+        plotted_yields = simulated_yields[np.sort(selected)]
+    else:
+        plotted_yields = simulated_yields
+
+    p05 = np.percentile(simulated_yields, 5, axis=0)
+    p50 = np.percentile(simulated_yields, 50, axis=0)
+    p95 = np.percentile(simulated_yields, 95, axis=0)
+
+    fig, ax = plt.subplots(figsize=(10, 5.8))
+    for scenario in plotted_yields:
+        ax.plot(x, scenario, color="#7ea9c8", alpha=0.08, linewidth=0.9)
+
+    ax.fill_between(
+        x,
+        p05,
+        p95,
+        color="#8bb7d8",
+        alpha=0.24,
+        label="5th-95th percentile",
+    )
+    ax.plot(
+        x,
+        p50,
+        color="#1f5f8b",
+        marker="o",
+        linewidth=2.3,
+        markersize=5,
+        label="Median simulation",
+    )
+    ax.plot(
+        x,
+        point_yields,
+        color="#22313f",
+        marker="D",
+        linestyle="--",
+        linewidth=2.0,
+        markersize=5,
+        label="Point forecast",
+    )
+
+    ax.set_title("Monte Carlo Simulated Yield Curves")
+    ax.set_xlabel("Maturity")
+    ax.set_ylabel("Yield (%)")
+    ax.set_xticks(x, MATURITIES)
+    ax.grid(axis="y", alpha=0.22)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.legend(frameon=True, loc="upper left")
     fig.tight_layout()
     fig.savefig(figure_path, dpi=180, bbox_inches="tight")
     plt.close(fig)

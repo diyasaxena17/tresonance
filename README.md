@@ -1,8 +1,8 @@
-# Market Resonance
+# Tresonance
 
 **Multi-frequency neural Treasury yield-curve forecasting with PyTorch**
 
-Market Resonance is a compact research project studying whether
+Tresonance is a compact research project studying whether
 multi-frequency Treasury yield features improve one-trading-day-ahead
 yield-curve forecasts over simple baselines.
 

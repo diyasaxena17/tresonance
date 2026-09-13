@@ -20,6 +20,8 @@ def test_uncertainty_simulation_saves_scenarios_and_ranges(tmp_path) -> None:
     range_path = tmp_path / "ranges.csv"
     fan_path = tmp_path / "fan.png"
     range_figure_path = tmp_path / "ranges.png"
+    distribution_figure_path = tmp_path / "distributions.png"
+    simulation_figure_path = tmp_path / "simulations.png"
     _synthetic_yields(130).to_csv(data_path, index=False)
     model = YieldCurveLSTM(input_size=28, hidden_size=8, output_size=7)
     torch.save(
@@ -53,6 +55,8 @@ def test_uncertainty_simulation_saves_scenarios_and_ranges(tmp_path) -> None:
         range_path=range_path,
         fan_figure_path=fan_path,
         range_figure_path=range_figure_path,
+        distribution_figure_path=distribution_figure_path,
+        simulation_figure_path=simulation_figure_path,
         scenario_count=25,
         seed=1,
     )
@@ -65,6 +69,8 @@ def test_uncertainty_simulation_saves_scenarios_and_ranges(tmp_path) -> None:
     assert len(ranges) == 7
     assert len(summary["residual_covariance_basis_points"]) == 7
     assert summary["residual_source"] == "validation split only"
+    assert run.distribution_figure_path.exists()
+    assert run.simulation_figure_path.exists()
 
 
 def _synthetic_yields(rows: int) -> pd.DataFrame:
