@@ -1,22 +1,92 @@
 # Market Resonance
 
-**Multi-Frequency Neural Yield Curve Forecasting with PyTorch**
+**Multi-frequency neural Treasury yield-curve forecasting with PyTorch**
 
-Market Resonance is a research-style project asking whether daily, weekly, and monthly representations of U.S. Treasury yield movements improve out-of-sample forecasts over simple baselines.
+Market Resonance is a compact research project studying whether
+multi-frequency Treasury yield features improve one-trading-day-ahead
+yield-curve forecasts over simple baselines.
 
-This repository is intentionally being built in small conceptual stages. The model is not implemented yet.
+## Research Question
 
-## Research scope
+Do 5-day and 21-day yield-change features improve a small LSTM forecast beyond
+daily yield levels and 1-day changes?
 
-We will forecast seven Treasury maturities:
+The seven forecast maturities are:
 
 `3M`, `6M`, `1Y`, `2Y`, `5Y`, `10Y`, and `30Y`.
 
-The primary model will be a small, interpretable PyTorch LSTM. Every comparison will preserve chronological order and keep preprocessing statistics fitted on training data only.
+## Key Figure
 
-## Setup
+![Ablation RMSE by maturity](reports/figures/ablation_rmse_by_maturity.png)
 
-The project currently targets Python 3.9 or newer. A fresh environment can be created with:
+The ablation result did **not** support the multi-frequency hypothesis in this
+run.
+
+## Methodology
+
+```mermaid
+flowchart LR
+    A[FRED Treasury yields] --> B[Clean daily dataset]
+    B --> C[Feature windows]
+    C --> D[Chronological splits]
+    D --> E[Train-only normalization]
+    E --> F[Baselines]
+    E --> G[Small LSTM]
+    G --> H[Inference]
+    H --> I[Residual covariance]
+    I --> J[Monte Carlo yield curves]
+```
+
+## Results
+
+All values are generated artifacts in `reports/` or `results/`.
+
+| model | test MAE (bp) | test RMSE (bp) |
+|---|---:|---:|
+| persistence zero-change | 3.679 | 5.457 |
+| daily LSTM | 3.756 | 5.502 |
+| multi-frequency LSTM | 3.805 | 5.544 |
+| linear regression | 3.994 | 5.679 |
+
+Inference metrics from `results/inference_metrics.json`:
+
+| metric | value |
+|---|---:|
+| trainable parameters | 24,519 |
+| single-sample latency | 0.5181 ms |
+| batch latency, 64 samples | 7.5259 ms |
+
+Uncertainty range examples from `reports/tables/uncertainty_ranges.csv`:
+
+| maturity | 90% range width (bp) |
+|---|---:|
+| 3M | 8.157107 |
+| 2Y | 11.536339 |
+| 30Y | 14.869325 |
+
+## Strongest Findings
+
+- The zero-change persistence baseline was difficult to beat.
+- The daily-only LSTM slightly outperformed the multi-frequency LSTM.
+- The multi-frequency hypothesis was not supported in this run.
+- Linear regression performed worse than persistence and both LSTMs overall.
+- Validation residual covariance can produce a simple probabilistic forecast,
+  but the assumptions are intentionally modest.
+
+## Limitations
+
+- This is a small educational LSTM, not a tuned production model.
+- The target horizon is one trading day.
+- Daily Treasury yield changes are noisy and often close to zero.
+- Constant-maturity/par yields are not an exact zero-coupon discount curve.
+- The stochastic simulation assumes validation residuals are representative and
+  approximately multivariate normal.
+- The discounting example in the docs is an illustrative approximation, not bond
+  pricing.
+
+## Reproducibility
+
+Set up an environment:
 
 ```bash
 python3 -m venv .venv
@@ -25,36 +95,56 @@ python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 ```
 
-Then verify the data pipeline:
+Run checks:
 
 ```bash
-pytest
+PYTHONPATH=src pytest
 ruff check .
 ```
 
-## Download Treasury data
-
-After installing the project, download the complete daily observations from
-FRED with:
+Regenerate the main artifacts:
 
 ```bash
 download-treasury-data --start-date 1990-01-01
+explore-treasury-data
+evaluate-baselines
+train-first-lstm --max-epochs 1 --patience 1
+run-lstm-inference
+run-ablation-study
+run-uncertainty-simulation
 ```
 
-This writes `data/processed/treasury_yields_daily.csv`. The command uses the
-public FRED CSV endpoint and does not require an API key. It keeps one row per
-date only when all seven maturities have numeric observations. It does not
-forward-fill weekends, holidays, or other missing observations.
+## Repository Structure
 
-## Project map
+```text
+configs/                         experiment defaults
+data/                            raw/interim/processed data locations
+docs/                            research-style documentation
+notebooks/                       educational walkthrough notebooks
+reports/figures/                 generated figures
+reports/models/                  saved model checkpoints
+reports/tables/                  generated result tables
+results/                         JSON and CSV experiment outputs
+src/market_resonance/data/       data loading and validation
+src/market_resonance/features/   supervised windows and normalization
+src/market_resonance/models/     PyTorch model definitions
+src/market_resonance/training/   training loops and checkpoints
+src/market_resonance/evaluation/ baselines and ablations
+src/market_resonance/inference/  inference and uncertainty simulation
+tests/                           focused regression tests
+```
 
-See [docs/architecture.md](docs/architecture.md) for the planned stages, tensor contracts, leakage controls, and experiment flow.
+## Documentation Map
 
-- `src/market_resonance/`: package code, added one conceptual stage at a time
-- `tests/`: small tests for data and feature logic
-- `data/raw/`: downloaded source data, never committed
-- `data/interim/`: cleaned intermediate data, never committed
-- `data/processed/`: model-ready artifacts, never committed
-- `reports/figures/`: generated publication-quality figures, never committed
-- `configs/`: version-controlled experiment settings
-- `notebooks/`: optional exploration only; reusable logic belongs in `src/`
+- `docs/00_abstract.md`
+- `docs/01_finance_primer.md`
+- `docs/02_research_question.md`
+- `docs/03_data_and_multi_frequency_features.md`
+- `docs/04_pytorch_and_model_architecture.md`
+- `docs/05_training.md`
+- `docs/06_inference.md`
+- `docs/07_ablation_study.md`
+- `docs/08_stochastic_uncertainty.md`
+- `docs/09_results_and_failure_modes.md`
+- `docs/10_ml_systems_notes.md`
+- `docs/time_value_of_money_example.md`

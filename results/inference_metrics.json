@@ -1,0 +1,52 @@
+{
+  "forecast_date": "2026-09-08 + 1 trading day(s)",
+  "latest_input_date": "2026-09-08",
+  "forecast": [
+    {
+      "maturity": "3M",
+      "latest_yield_percent": 3.94,
+      "predicted_change_bp": 0.2308,
+      "forecast_yield_percent": 3.9423
+    },
+    {
+      "maturity": "6M",
+      "latest_yield_percent": 4.0,
+      "predicted_change_bp": 0.5275,
+      "forecast_yield_percent": 4.0053
+    },
+    {
+      "maturity": "1Y",
+      "latest_yield_percent": 4.15,
+      "predicted_change_bp": -0.6766,
+      "forecast_yield_percent": 4.1432
+    },
+    {
+      "maturity": "2Y",
+      "latest_yield_percent": 4.39,
+      "predicted_change_bp": 1.1872,
+      "forecast_yield_percent": 4.4019
+    },
+    {
+      "maturity": "5Y",
+      "latest_yield_percent": 4.57,
+      "predicted_change_bp": -0.1153,
+      "forecast_yield_percent": 4.5688
+    },
+    {
+      "maturity": "10Y",
+      "latest_yield_percent": 4.8,
+      "predicted_change_bp": 0.9126,
+      "forecast_yield_percent": 4.8091
+    },
+    {
+      "maturity": "30Y",
+      "latest_yield_percent": 5.25,
+      "predicted_change_bp": 1.1722,
+      "forecast_yield_percent": 5.2617
+    }
+  ],
+  "parameter_count": 24519,
+  "single_sample_latency_ms": 0.5181,
+  "batch_size": 64,
+  "batch_latency_ms": 7.5259
+}

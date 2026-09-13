@@ -92,6 +92,7 @@ def train_lstm_model(
     validation_loader: DataLoader,
     config: TrainingConfig | None = None,
     checkpoint_path: Path = DEFAULT_CHECKPOINT_PATH,
+    checkpoint_metadata: dict | None = None,
 ) -> TrainingHistory:
     """Train a small LSTM with MSE loss, Adam, and early stopping."""
     if config is None:
@@ -130,6 +131,12 @@ def train_lstm_model(
                     "model_state_dict": model.state_dict(),
                     "validation_loss": validation_loss,
                     "config": config.__dict__,
+                    "model_config": {
+                        "input_size": model.input_size,
+                        "hidden_size": model.hidden_size,
+                        "output_size": model.output_size,
+                    },
+                    "metadata": checkpoint_metadata or {},
                 },
                 checkpoint_path,
             )

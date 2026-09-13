@@ -27,6 +27,9 @@ download-treasury-data = "market_resonance.data.download_treasury:main"
 explore-treasury-data = "market_resonance.visualization.explore_treasury:main"
 evaluate-baselines = "market_resonance.evaluation.run_baselines:main"
 train-first-lstm = "market_resonance.training.train_lstm:main"
+run-lstm-inference = "market_resonance.inference.run_inference:main"
+run-ablation-study = "market_resonance.evaluation.run_ablation:main"
+run-uncertainty-simulation = "market_resonance.inference.run_uncertainty:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

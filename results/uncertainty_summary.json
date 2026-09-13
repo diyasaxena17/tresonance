@@ -1,0 +1,85 @@
+{
+  "latest_input_date": "2026-09-08",
+  "scenario_count": 1000,
+  "residual_source": "validation split only",
+  "assumptions": [
+    "Validation residuals are representative of next forecast errors.",
+    "Forecast errors are centered at zero around the neural point forecast.",
+    "Forecast errors follow a multivariate normal distribution.",
+    "The covariance estimate is fixed for this one-step forecast."
+  ],
+  "residual_covariance_basis_points": [
+    [
+      6.189675,
+      3.290292,
+      2.388734,
+      2.37455,
+      2.249902,
+      2.061744,
+      1.694766
+    ],
+    [
+      3.290292,
+      4.919477,
+      3.457719,
+      3.674274,
+      3.979084,
+      3.469047,
+      3.232558
+    ],
+    [
+      2.388734,
+      3.457719,
+      6.251426,
+      5.940426,
+      6.575505,
+      5.245386,
+      4.934735
+    ],
+    [
+      2.37455,
+      3.674274,
+      5.940426,
+      12.137893,
+      12.823008,
+      10.955217,
+      9.894094
+    ],
+    [
+      2.249902,
+      3.979084,
+      6.575505,
+      12.823008,
+      17.841222,
+      16.470231,
+      15.299167
+    ],
+    [
+      2.061744,
+      3.469047,
+      5.245386,
+      10.955217,
+      16.470231,
+      19.645652,
+      18.453845
+    ],
+    [
+      1.694766,
+      3.232558,
+      4.934735,
+      9.894094,
+      15.299167,
+      18.453845,
+      21.164993
+    ]
+  ],
+  "point_forecast_yields_percent": {
+    "3M": 3.948482,
+    "6M": 4.001157,
+    "1Y": 4.148597,
+    "2Y": 4.393418,
+    "5Y": 4.569318,
+    "10Y": 4.803478,
+    "30Y": 5.258275
+  }
+}
