@@ -8,6 +8,24 @@ yield-curve forecasts over simple baselines. It also includes a small
 reinforcement-learning extension that reframes next-day 10Y Treasury movement
 as a FALL/FLAT/RISE decision problem.
 
+## Summary
+
+This project tested two related ideas:
+
+1. Can multi-frequency features improve supervised Treasury yield-curve
+   forecasts?
+2. Can a small DQN make better next-day 10Y direction decisions than existing
+   forecasting models after their numerical predictions are converted into
+   FALL/FLAT/RISE classes?
+
+The supervised result was humbling: the multi-frequency LSTM did **not** beat
+the daily-only LSTM or the zero-change persistence baseline on overall test
+MAE/RMSE.
+
+The directional RL result was more encouraging but still limited: the DQN had
+the best 10Y directional accuracy in this run, but its average reward remained
+negative and it did not learn the FLAT class well.
+
 ## Research Question
 
 Do 5-day and 21-day yield-change features improve a small LSTM forecast beyond
@@ -23,6 +41,14 @@ The seven forecast maturities are:
 
 ## Key Figure
 
+![10Y directional accuracy by model](reports/figures/rl_directional_accuracy.png)
+
+The DQN had the highest held-out 10Y directional accuracy in this run. This is
+not a profitability claim: it is a research result for a simple directional
+classification reward.
+
+For the original yield-curve forecasting ablation:
+
 ![Ablation RMSE by maturity](reports/figures/ablation_rmse_by_maturity.png)
 
 The ablation result did **not** support the multi-frequency hypothesis in this
@@ -33,22 +59,34 @@ run.
 ```mermaid
 flowchart LR
     A[FRED Treasury yields] --> B[Clean daily dataset]
-    B --> C[Feature windows]
-    C --> D[Chronological splits]
+    B --> C[Chronological train / validation / test split]
+
+    C --> D[Supervised feature windows]
     D --> E[Train-only normalization]
-    E --> F[Baselines]
-    E --> G[Small LSTM]
-    G --> H[Inference]
-    H --> I[Residual covariance]
-    I --> J[Monte Carlo yield curves]
-    E --> K[10Y direction environment]
-    K --> L[Small DQN]
-    L --> M[Directional comparison]
+    E --> F[Persistence + linear regression]
+    E --> G[Daily LSTM]
+    E --> H[Multi-frequency LSTM]
+    G --> I[Numerical yield-change forecasts]
+    H --> I
+    F --> I
+    I --> J[Convert 10Y forecasts to FALL / FLAT / RISE]
+
+    C --> K[Train-only 10Y directional environment]
+    K --> L[DQN + replay buffer + target network]
+    L --> M[Greedy test-period actions]
+
+    J --> N[Common-date directional comparison]
+    M --> N
+    H --> O[Inference]
+    O --> P[Residual covariance]
+    P --> Q[Monte Carlo yield curves]
 ```
 
 ## Results
 
 All values are generated artifacts in `reports/` or `results/`.
+
+### Numerical Forecasting
 
 | model | test MAE (bp) | test RMSE (bp) |
 |---|---:|---:|
@@ -56,6 +94,11 @@ All values are generated artifacts in `reports/` or `results/`.
 | daily LSTM | 3.756 | 5.502 |
 | multi-frequency LSTM | 3.805 | 5.544 |
 | linear regression | 3.994 | 5.679 |
+
+The persistence baseline remained difficult to beat. The daily-only LSTM
+slightly outperformed the multi-frequency LSTM in this run.
+
+### Directional 10Y Experiment
 
 Directional 10Y experiment from `reports/tables/rl_model_comparison.csv`:
 
@@ -69,6 +112,8 @@ Directional 10Y experiment from `reports/tables/rl_model_comparison.csv`:
 
 DQN MAE/RMSE are unavailable because the DQN chooses direction actions rather
 than predicting numerical yield changes.
+
+### Inference And Uncertainty
 
 Inference metrics from `results/inference_metrics.json`:
 
