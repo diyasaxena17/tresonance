@@ -40,8 +40,6 @@ Does adding 5-day and 21-day trailing yield-change information improve an LSTM
 relative to daily-only features for one-day-ahead U.S. Treasury yield-curve
 forecasting?
 
-## Hypothesis
-
 Multi-frequency Treasury-market features should help the LSTM capture movement
 patterns that are not visible from daily yield levels and one-day changes alone.
 The current results do not support this hypothesis.
@@ -201,9 +199,9 @@ evaluation windows.
 ## Reinforcement Learning Extension
 
 Tresonance also includes an experimental DQN reinforcement-learning extension
-for sequential Treasury-direction decisions. The task is narrower than the
-main supervised forecast: predict whether the next-trading-day `10Y` Treasury
-yield move will be `FALL`, `FLAT`, or `RISE`.
+for sequential Treasury-direction decisions. The narrower task is to predict
+whether the next-trading-day `10Y` Treasury yield move will be `FALL`, `FLAT`,
+or `RISE`.
 
 The DQN state contains five values available at decision time:
 
@@ -218,9 +216,9 @@ when the chosen action matches the realized next-day `10Y` direction and `-1`
 otherwise, using a `1 bp` threshold for the `FLAT` class.
 
 The agent uses a neural Q-network, experience replay, a target network, and
-epsilon-greedy exploration during training. Directional performance is compared
-on a common-date test window against the supervised models after their `10Y`
-numerical forecasts are converted into the same direction classes.
+epsilon-greedy exploration. Directional performance is compared on a common-date
+test window against supervised models after their `10Y` numerical forecasts are
+converted into the same direction classes.
 
 Directional results from `reports/tables/rl_model_comparison.csv`:
 
@@ -249,9 +247,9 @@ state and use an economically meaningful PnL-style reward.
 Training builds historical supervised windows, wraps them in a PyTorch
 `Dataset`/`DataLoader`, runs the LSTM forward pass, computes MSE loss,
 backpropagates with Adam, evaluates validation loss, and saves the best
-checkpoint by validation performance. Checkpoints include model weights, model
-configuration, feature columns, target columns, lookback/horizon settings, and
-the training-only normalization mean and scale.
+checkpoint. Checkpoints include model weights, model configuration,
+feature/target columns, lookback/horizon settings, and the training-only
+normalization mean and scale.
 
 Inference is a separate path: the saved checkpoint is loaded on CPU, the latest
 valid 60-trading-day feature window is rebuilt from the Treasury data, the
@@ -282,28 +280,8 @@ Uncertainty range examples from `reports/tables/uncertainty_ranges.csv`:
 *Residual-covariance Monte Carlo yield-curve fan around the LSTM point forecast.
 Source: `reports/figures/yield_curve_fan.png`.*
 
-## Strongest Findings
-
-- The zero-change persistence baseline was difficult to beat.
-- The daily-only LSTM slightly outperformed the multi-frequency LSTM.
-- The multi-frequency hypothesis was not supported in this run.
-- Linear regression performed worse than persistence and both LSTMs overall.
-- The DQN had the best 10Y directional accuracy in the RL experiment, but its
-  average directional reward remained negative and it did not learn the FLAT
-  class well.
-- Validation residual covariance can produce a simple probabilistic forecast,
-  but the assumptions are intentionally modest.
-
-## Skills And Learnings
-
-- Chronological financial ML evaluation and leakage prevention
-- PyTorch LSTM training, checkpointing, and inference
-- Baseline comparison and ablation-study design
-- Simple residual-based uncertainty simulation
-- Reinforcement-learning formulation with a DQN, replay buffer, target network,
-  and directional reward
-
-## Limitations
+<details>
+<summary><strong>Limitations</strong></summary>
 
 - The main supervised result comes from one fixed historical
   train/validation/test split; walk-forward validation across regimes has not
@@ -322,7 +300,10 @@ Source: `reports/figures/yield_curve_fan.png`.*
 - The residual-covariance uncertainty simulation is a simple forecast-error
   scenario layer, not a full market-risk model.
 
-## Future Work
+</details>
+
+<details>
+<summary><strong>Future Work</strong></summary>
 
 1. Add a ridge regression baseline to test whether regularized linear models
    improve on ordinary least squares and provide a stronger non-neural
@@ -339,7 +320,10 @@ Source: `reports/figures/yield_curve_fan.png`.*
 Transformer-style models are intentionally low priority until stronger
 baselines, curve representations, and validation design are in place.
 
-## Reproducibility
+</details>
+
+<details>
+<summary><strong>Reproducibility</strong></summary>
 
 Create a local environment and install the project in editable mode:
 
@@ -419,7 +403,10 @@ Saved artifact locations:
 | figures | `reports/figures/` |
 | JSON/CSV experiment outputs and predictions | `results/` |
 
-## Repository Structure
+</details>
+
+<details>
+<summary><strong>Repository Structure</strong></summary>
 
 ```text
 tresonance/
@@ -442,18 +429,26 @@ tresonance/
 └── pyproject.toml
 ```
 
-## Documentation Map
+</details>
 
-- `docs/00_abstract.md`
-- `docs/01_finance_primer.md`
-- `docs/02_research_question.md`
-- `docs/03_data_and_multi_frequency_features.md`
-- `docs/04_pytorch_and_model_architecture.md`
-- `docs/05_training.md`
-- `docs/06_inference.md`
-- `docs/07_ablation_study.md`
-- `docs/08_stochastic_uncertainty.md`
-- `docs/09_results_and_failure_modes.md`
-- `docs/10_ml_systems_notes.md`
-- `docs/11_reinforcement_learning.md`
-- `docs/time_value_of_money_example.md`
+<details>
+<summary><strong>Docs</strong></summary>
+
+| document | description |
+|---|---|
+| `docs/00_abstract.md` | Project abstract and high-level research summary. |
+| `docs/01_finance_primer.md` | Background on Treasuries, yields, maturities, basis points, and yield curves. |
+| `docs/02_research_question.md` | Research question, hypothesis, target definition, and evaluation framing. |
+| `docs/03_data_and_multi_frequency_features.md` | FRED data source, maturities, feature sets, supervised windows, and leakage controls. |
+| `docs/04_pytorch_and_model_architecture.md` | Baselines, LSTM architecture, tensor shapes, and model rationale. |
+| `docs/05_training.md` | Training loop concepts, DataLoader usage, loss, optimization, early stopping, and checkpoints. |
+| `docs/06_inference.md` | Difference between training and inference, saved-model loading, and forecast output. |
+| `docs/07_ablation_study.md` | Daily vs multi-frequency LSTM ablation design and result. |
+| `docs/08_stochastic_uncertainty.md` | Residual-covariance Monte Carlo uncertainty method and assumptions. |
+| `docs/09_results_and_failure_modes.md` | Consolidated results, negative findings, and modeling limitations. |
+| `docs/10_ml_systems_notes.md` | ML systems organization, artifact policy, and reproducibility notes. |
+| `docs/11_reinforcement_learning.md` | DQN extension, state/action/reward design, evaluation, and limitations. |
+| `docs/architecture.md` | Original architecture and research plan for the project. |
+| `docs/time_value_of_money_example.md` | Educational discounting example connecting forecasted rates to present value. |
+
+</details>
